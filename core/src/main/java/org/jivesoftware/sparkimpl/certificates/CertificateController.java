@@ -563,7 +563,6 @@ public class CertificateController extends CertManager {
         if (checkForSameCertificate(addedCert) == false) {
             certDialog = showCertificate(certModel, reason);
         }
-        // value of addToKeyStore is changed by setter in CertificateDialog
         if (certDialog != null && certDialog.isAddCert()) {
             addEntryToKeyStoreImpl(certModel, false);
 
