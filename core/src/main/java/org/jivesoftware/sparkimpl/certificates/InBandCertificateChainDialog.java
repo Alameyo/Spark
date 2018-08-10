@@ -33,7 +33,6 @@ public class InBandCertificateChainDialog extends JDialog implements ActionListe
 
     private KeyStore trustStore, caCertsStore;
     private boolean readyToAddEndCertificate;
-    private boolean readyToAddChain = false;
     private CertificateController certMan;
     private X509Certificate[] chain;
     private JTextField endCertTextField = new JTextField();
@@ -41,7 +40,6 @@ public class InBandCertificateChainDialog extends JDialog implements ActionListe
     private JScrollPane scrollPane;
     private JPanel panel = new JPanel();
     private JButton addSingleCertButton =   new JButton();
-    private JButton addChainButton =        new JButton();
     private JButton cancelButton =          new JButton();
     private JButton advancedButton =        new JButton();
     private ImageIcon imgIconInStore = SparkRes.getImageIcon(SparkRes.ACCEPT_INVITE_IMAGE);
@@ -71,7 +69,6 @@ public class InBandCertificateChainDialog extends JDialog implements ActionListe
         Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
         setLocation(dimension.width / 2 - this.getWidth(), dimension.height / 2 - this.getHeight() / 2);
         setModal(true);
-        setAlwaysOnTop(true);
         setResizable(false);
         
         endCertModel = new CertificateModel(chain[0]);
@@ -86,12 +83,10 @@ public class InBandCertificateChainDialog extends JDialog implements ActionListe
         }        
         endCertTextField.setEditable(false);
         
-        addChainButton.setText(Res.getString("dialog.certificate.add.chain"));
         addSingleCertButton.setText(Res.getString("button.add2"));
         cancelButton.setText(Res.getString("cancel"));
         advancedButton.setText(Res.getString("button.advanced"));
 
-        addChainButton.addActionListener(this);
         addSingleCertButton.addActionListener(this);
         cancelButton.addActionListener(this);
         advancedButton.addActionListener(this);
@@ -152,15 +147,11 @@ public class InBandCertificateChainDialog extends JDialog implements ActionListe
         if (e.getSource() == cancelButton) {
             this.dispose();
         }
-        if (e.getSource() == addChainButton) {
-            readyToAddChain = true;
-            this.dispose();
-        }
         if (e.getSource() == advancedButton) {
             showAdvanced();
         }
         if (e.getSource() == addSingleCertButton) {
-        //    addCertButtonImpl(endCertModel);
+            addEndEntityCertButtonImpl(endCertModel);
             this.dispose();
         }
     }
@@ -175,25 +166,27 @@ public class InBandCertificateChainDialog extends JDialog implements ActionListe
     }
 
     private void addEndEntityCertButtonImpl(CertificateModel certModel) {
-        
+        try {
+            certMan.addEntryToKeyStore(certModel.getCertificate(), true);
+            certMan.overWriteKeyStores();
+        } catch (HeadlessException | InvalidNameException | KeyStoreException e) {
+            Log.error("Cannot add certificate from connection", e);
+        }
     }
     
     private void addCertButtonImpl(CertificateModel certModel, JButton button, GridBagConstraints constraints) {
         try {
-            certMan.addEntryToKeyStore(certModel.getCertificate(), true);
+            certMan.addEntryToKeyStore(certModel.getCertificate(), CertificateDialogReason.ADD_CERTIFICATE_FROM_CONNECTION);
             certMan.overWriteKeyStores();
+            
             panel.remove(button);
             panel.add(new JLabel(imgIconInStore), constraints);
         } catch (HeadlessException | InvalidNameException | KeyStoreException e1) {
-            Log.error("Cannot add certificate from connection");
+            Log.error("Cannot add certificate from connection", e1);
         }
         
         revalidate();
         repaint();
-    }
-
-    public boolean isReadyToAddChain() {
-        return readyToAddChain;
     }
     
     public boolean isReadyToAddEndCertificate() {
