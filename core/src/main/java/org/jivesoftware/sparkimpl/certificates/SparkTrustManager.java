@@ -257,11 +257,6 @@ public class SparkTrustManager extends GeneralTrustManager implements X509TrustM
             if (trustedCert == null) {
                 throw new CertificateException("certificate path failed: Trusted CA is NULL");
             }
-            // check if all certificates in path have Basic Constraints, only certificate that isn't required to have
-            // this extension is last certificate: root CA
-            for (int i = 0; i < chain.length - 1; i++) {
-                checkBasicConstraints(chain[i]);
-            }
         } catch (CertificateRevokedException e) {
             Log.warning("Certificate was revoked", e);
             for (X509Certificate cert : chain) {
