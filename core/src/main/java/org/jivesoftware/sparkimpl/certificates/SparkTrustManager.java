@@ -302,18 +302,6 @@ public class SparkTrustManager extends GeneralTrustManager implements X509TrustM
     }
 
     /**
-     * Check if certificate have basic constraints exception.
-     * 
-     * @param certificate given by server
-     * @throws CertificateException
-     */
-    private void checkBasicConstraints(X509Certificate cert) throws CertificateException {
-        if (cert.getBasicConstraints() != -1) {
-            throw new CertificateException("Certificate have no basic constraints");
-        }
-    }
-
-    /**
      * loads truststores and potentially (depending on settings) blacklist
      */
     @Override
